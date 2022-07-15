@@ -6,7 +6,7 @@ import { Client as DogeClient } from '@xchainjs/xchain-doge';
 import { Client as LtcClient } from '@xchainjs/xchain-litecoin';
 import { Client as BchClient } from '@xchainjs/xchain-bitcoincash';
 import { DepositParams, Network, TxParams } from '@xchainjs/xchain-client';
-import { AssetETH, Chain, ETHChain, THORChain } from '@xchainjs/xchain-util';
+import { Asset, AssetETH, BaseAmount, Chain, ETHChain, THORChain } from '@xchainjs/xchain-util';
 
 export class Multichain {
   thor: ThorClient;
@@ -36,13 +36,12 @@ export class Multichain {
     });
   }
 
-  async swap(inputAmount, recipientAddress, memo, asset) {
-    const chain = inputAmount.chain;
-    if (chain === THORChain) {
+  async swap(inputAmount: BaseAmount, recipientAddress: string, memo: string, asset: Asset) {
+    if (asset.chain === THORChain) {
       return this.thor.deposit({ walletIndex: 0, asset, amount: inputAmount, memo });
     }
     // call deposit contract for eth chain
-    if (chain === ETHChain) {
+    if (asset.chain === ETHChain) {
       const params: DepositParams = {
         walletIndex: 0,
         asset: AssetETH,
@@ -58,7 +57,7 @@ export class Multichain {
       recipient: recipientAddress,
       memo,
     };
-    return this.getChainClient(chain).transfer(params);
+    return this.getChainClient(asset.chain).transfer(params);
   }
 
   getChainClient = (chain: Chain) => {
