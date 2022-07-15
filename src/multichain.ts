@@ -5,14 +5,8 @@ import { Client as BtcClient } from '@xchainjs/xchain-bitcoin';
 import { Client as DogeClient } from '@xchainjs/xchain-doge';
 import { Client as LtcClient } from '@xchainjs/xchain-litecoin';
 import { Client as BchClient } from '@xchainjs/xchain-bitcoincash';
-import { DepositParams, FeeOption, Network, TxHash, TxParams } from '@xchainjs/xchain-client';
-import { Asset, AssetETH, Chain, ETHChain, THORChain } from '@xchainjs/xchain-util';
-// import { AssetAtom, getDefaultChainIds } from '@xchainjs/xchain-cosmos';
-// import { TCRopstenAbi } from 'thorchain-ropsten.abi';
-// import { getGasPrice } from 'gas';
-// import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
-import { getDefaultChainIds } from '@xchainjs/xchain-cosmos';
+import { DepositParams, Network, TxParams } from '@xchainjs/xchain-client';
+import { AssetETH, Chain, ETHChain, THORChain } from '@xchainjs/xchain-util';
 
 export class Multichain {
   thor: ThorClient;
@@ -76,69 +70,5 @@ export class Multichain {
     if (chain === Chain.BitcoinCash) return this.bch;
     if (chain === Chain.Doge) return this.doge;
     return null;
-  };
-
-  // depositEth = async (params): Promise<TxHash> => {
-  //   const { assetAmount, recipient, memo, feeRate, feeOption = FeeOption.Fast, router } = params;
-
-  //   const { asset } = assetAmount;
-
-  //   // deposit base amount
-  //   const amount = assetAmount.amount.baseAmount.integerValue(BigNumber.ROUND_DOWN).toFixed();
-
-  //   const checkSummedAddress = this.getCheckSumAddress(asset);
-
-  //   // get gas amount based on the fee option
-  //   const gasPrice = await getGasPrice({
-  //     client: this.eth,
-  //     feeRate,
-  //     feeOption,
-  //     decimal: 0,
-  //   });
-
-  //   const contractParams = [
-  //     recipient, // vault address
-  //     checkSummedAddress, // asset checksum address
-  //     amount, // deposit amount
-  //     memo,
-  //     asset.isETH()
-  //       ? {
-  //           from: this.eth.getAddress(),
-  //           value: amount,
-  //           gasPrice,
-  //         }
-  //       : { gasPrice },
-  //   ];
-
-  //   if (!router) {
-  //     throw Error('invalid router');
-  //   }
-
-  //   try {
-  //     const ethParams = {
-  //       walletIndex: 0,
-  //       contractAddress: router,
-  //       abi: TCRopstenAbi,
-  //       funcName: 'deposit',
-  //       funcParams: contractParams,
-  //     };
-  //     const res: any = await this.eth.call(ethParams);
-
-  //     return res?.hash ?? '';
-  //   } catch (error: any) {
-  //     if (error?.method === 'estimateGas') throw Error('Estimating gas failed. You may have not enough ETH.');
-  //     else throw Error('You may have not enough ETH to submit the transaction');
-  //   }
-  // };
-  getCheckSumAddress = (asset: Asset): string => {
-    if (asset.ticker === 'ETH') return ETHAddress;
-
-    const assetAddress = getTokenAddress(asset);
-
-    if (assetAddress) {
-      return ethers.utils.getAddress(assetAddress.toLowerCase());
-    }
-
-    throw new Error('invalid eth asset address');
   };
 }
