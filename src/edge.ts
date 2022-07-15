@@ -4,9 +4,11 @@ import * as boxen from 'boxen';
 import BigNumber from 'bignumber.js';
 import { Network } from '@xchainjs/xchain-client';
 import { BaseAmount, baseAmount, Asset, AssetBNB } from '@xchainjs/xchain-util';
-import { Multichain } from 'multichain';
+import { Multichain } from './multichain';
 import { AssetPool } from './types';
 import chalk from 'chalk';
+import 'dotenv/config';
+
 // JS code that queries for a swap quote from the Thor network
 // JS code that creates the data/OP_RETURN payload for the sending transaction
 // A sample app that uses #1 and 2 to create quotes and and send transactions (this can use xchain.js)
@@ -43,7 +45,8 @@ const useMidgard = async (): Promise<AssetPool[]> => {
     return [];
   }
 };
-
+const defaultNetwork = Network.Mainnet;
+const defaultPhrase = process.env.SECRET_PHRASE;
 const options = yargs
   .command('list', 'fetch the contents of the URL', {}, async (argv) => {
     console.info(title);
@@ -55,8 +58,9 @@ const options = yargs
   .usage('Usage: list')
   .option('ticker', { alias: 't', describe: 'wallet phrase', type: 'string', demandOption: false })
   .command('swap', 'swap from asset to asset', {}, async (argv) => {
-    console.log(argv);
-    const multichain = new Multichain({ network, phrase });
+    console.log(argv.from);
+    console.log('phrase', defaultPhrase);
+    const multichain = new Multichain({ network: defaultNetwork, phrase: defaultPhrase });
     console.log('success');
   })
   .option('from', { alias: 'f', describe: 'wallet phrase', type: 'string', demandOption: false })

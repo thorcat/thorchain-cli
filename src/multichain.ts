@@ -1,4 +1,4 @@
-import { Client as ThorClient } from '@xchainjs/xchain-thorchain';
+import { Client as ThorClient, getChainIds, getDefaultClientUrl } from '@xchainjs/xchain-thorchain';
 import { Client as EthClient, ETHAddress, getTokenAddress } from '@xchainjs/xchain-ethereum';
 import { Client as BnbClient } from '@xchainjs/xchain-binance';
 import { Client as BtcClient } from '@xchainjs/xchain-bitcoin';
@@ -7,11 +7,12 @@ import { Client as LtcClient } from '@xchainjs/xchain-litecoin';
 import { Client as BchClient } from '@xchainjs/xchain-bitcoincash';
 import { DepositParams, FeeOption, Network, TxHash, TxParams } from '@xchainjs/xchain-client';
 import { Asset, AssetETH, Chain, ETHChain, THORChain } from '@xchainjs/xchain-util';
-import { AssetAtom, getDefaultChainIds } from '@xchainjs/xchain-cosmos';
-import { TCRopstenAbi } from 'thorchain-ropsten.abi';
-import { getGasPrice } from 'gas';
-import BigNumber from 'bignumber.js';
+// import { AssetAtom, getDefaultChainIds } from '@xchainjs/xchain-cosmos';
+// import { TCRopstenAbi } from 'thorchain-ropsten.abi';
+// import { getGasPrice } from 'gas';
+// import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
+import { getDefaultChainIds } from '@xchainjs/xchain-cosmos';
 
 export class Multichain {
   thor: ThorClient;
@@ -29,15 +30,16 @@ export class Multichain {
   bch: BchClient;
 
   constructor({ network, phrase }: { network: Network; phrase: string }) {
-    // create all clients
-    const chainIds = getDefaultChainIds();
-    this.thor = new ThorClient({ network, phrase, chainIds });
-    this.eth = new EthClient({ network, phrase });
-    this.bnb = new BnbClient({ network, phrase });
-    this.btc = new BtcClient({ network, phrase });
-    this.doge = new DogeClient({ network, phrase });
-    this.ltc = new LtcClient({ network, phrase });
-    this.bch = new BchClient({ network, phrase });
+    getChainIds(getDefaultClientUrl()).then((chainIds) => {
+      console.log('chain ids', chainIds);
+      this.thor = new ThorClient({ network, phrase, chainIds });
+      this.eth = new EthClient({ network, phrase });
+      this.bnb = new BnbClient({ network, phrase });
+      this.btc = new BtcClient({ network, phrase });
+      this.doge = new DogeClient({ network, phrase });
+      this.ltc = new LtcClient({ network, phrase });
+      this.bch = new BchClient({ network, phrase });
+    });
   }
 
   async swap(inputAmount, recipientAddress, memo, asset) {
@@ -76,58 +78,58 @@ export class Multichain {
     return null;
   };
 
-  depositEth = async (params): Promise<TxHash> => {
-    const { assetAmount, recipient, memo, feeRate, feeOption = FeeOption.Fast, router } = params;
+  // depositEth = async (params): Promise<TxHash> => {
+  //   const { assetAmount, recipient, memo, feeRate, feeOption = FeeOption.Fast, router } = params;
 
-    const { asset } = assetAmount;
+  //   const { asset } = assetAmount;
 
-    // deposit base amount
-    const amount = assetAmount.amount.baseAmount.integerValue(BigNumber.ROUND_DOWN).toFixed();
+  //   // deposit base amount
+  //   const amount = assetAmount.amount.baseAmount.integerValue(BigNumber.ROUND_DOWN).toFixed();
 
-    const checkSummedAddress = this.getCheckSumAddress(asset);
+  //   const checkSummedAddress = this.getCheckSumAddress(asset);
 
-    // get gas amount based on the fee option
-    const gasPrice = await getGasPrice({
-      client: this.eth,
-      feeRate,
-      feeOption,
-      decimal: 0,
-    });
+  //   // get gas amount based on the fee option
+  //   const gasPrice = await getGasPrice({
+  //     client: this.eth,
+  //     feeRate,
+  //     feeOption,
+  //     decimal: 0,
+  //   });
 
-    const contractParams = [
-      recipient, // vault address
-      checkSummedAddress, // asset checksum address
-      amount, // deposit amount
-      memo,
-      asset.isETH()
-        ? {
-            from: this.eth.getAddress(),
-            value: amount,
-            gasPrice,
-          }
-        : { gasPrice },
-    ];
+  //   const contractParams = [
+  //     recipient, // vault address
+  //     checkSummedAddress, // asset checksum address
+  //     amount, // deposit amount
+  //     memo,
+  //     asset.isETH()
+  //       ? {
+  //           from: this.eth.getAddress(),
+  //           value: amount,
+  //           gasPrice,
+  //         }
+  //       : { gasPrice },
+  //   ];
 
-    if (!router) {
-      throw Error('invalid router');
-    }
+  //   if (!router) {
+  //     throw Error('invalid router');
+  //   }
 
-    try {
-      const ethParams = {
-        walletIndex: 0,
-        contractAddress: router,
-        abi: TCRopstenAbi,
-        funcName: 'deposit',
-        funcParams: contractParams,
-      };
-      const res: any = await this.eth.call(ethParams);
+  //   try {
+  //     const ethParams = {
+  //       walletIndex: 0,
+  //       contractAddress: router,
+  //       abi: TCRopstenAbi,
+  //       funcName: 'deposit',
+  //       funcParams: contractParams,
+  //     };
+  //     const res: any = await this.eth.call(ethParams);
 
-      return res?.hash ?? '';
-    } catch (error: any) {
-      if (error?.method === 'estimateGas') throw Error('Estimating gas failed. You may have not enough ETH.');
-      else throw Error('You may have not enough ETH to submit the transaction');
-    }
-  };
+  //     return res?.hash ?? '';
+  //   } catch (error: any) {
+  //     if (error?.method === 'estimateGas') throw Error('Estimating gas failed. You may have not enough ETH.');
+  //     else throw Error('You may have not enough ETH to submit the transaction');
+  //   }
+  // };
   getCheckSumAddress = (asset: Asset): string => {
     if (asset.ticker === 'ETH') return ETHAddress;
 
