@@ -1,9 +1,9 @@
 {
-  "name": "defispot-cli",
+  "name": "thorchain-cli",
   "version": "1.0.0",
   "description": "TypeScript",
   "scripts": {
-    "edge": "nodemon src/edge.ts",
+    "thorchain": "nodemon src/edge.ts",
     "build": "npm run lint && rimraf dist/ && tsc",
     "start": "npm run build && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -54,6 +54,7 @@
     "dotenv": "^16.0.1",
     "ethers": "^5.6.9",
     "mongoose": "^6.4.2",
+    "table": "^6.8.0",
     "yargs": "^17.5.1"
   }
 }

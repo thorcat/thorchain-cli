@@ -23,3 +23,7 @@ export const getShortenedSymbol = (asset: Asset): string => {
 export const getRecipient = (): string => {
   return '';
 };
+
+export const compareAsset = (a: Asset, b: Asset): boolean => {
+  return a.chain === b.chain && a.symbol === b.symbol;
+};
