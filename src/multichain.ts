@@ -36,14 +36,14 @@ export class Multichain {
     });
   }
 
-  async swap(inputAmount: BaseAmount, recipientAddress: string, memo: string, asset: Asset) {
+  async swap(inputAmount: BaseAmount, recipientAddress: string, memo: string, asset: Asset, index?: number) {
     if (asset.chain === THORChain) {
-      return this.thor.deposit({ walletIndex: 0, asset, amount: inputAmount, memo });
+      return this.thor.deposit({ walletIndex: index, asset, amount: inputAmount, memo });
     }
     // call deposit contract for eth chain
     if (asset.chain === ETHChain) {
       const params: DepositParams = {
-        walletIndex: 0,
+        walletIndex: index,
         asset: AssetETH,
         amount: inputAmount,
         memo,
@@ -51,7 +51,7 @@ export class Multichain {
       return this.eth.deposit(params);
     }
     const params: TxParams = {
-      walletIndex: 0,
+      walletIndex: index,
       asset,
       amount: inputAmount,
       recipient: recipientAddress,
@@ -69,5 +69,9 @@ export class Multichain {
     if (chain === Chain.BitcoinCash) return this.bch;
     if (chain === Chain.Doge) return this.doge;
     return null;
+  };
+
+  getAddress = (chain: Chain, index?: number) => {
+    return this.getChainClient(chain).getAddress();
   };
 }

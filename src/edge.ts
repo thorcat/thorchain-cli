@@ -5,7 +5,7 @@ import { Multichain } from './multichain';
 import { AssetPool } from './types';
 import chalk from 'chalk';
 import 'dotenv/config';
-import { useMidgard } from './api';
+import { useMidgard } from './midgard';
 import { assetFromString, BaseAmount, baseAmount } from '@xchainjs/xchain-util';
 import { getRecipient, buildSwapMemo, getInputAmount, compareAsset } from './utils';
 import { table, TableUserConfig } from 'table';
@@ -44,30 +44,32 @@ yargs
   .usage('Usage: list')
   .command(
     'swap',
-    'swap from asset to asset',
+    'swap from asset to asset. To see a list of assets use `list` ',
     async (yargs) => {
-      yargs
-        .option('from', { alias: 'f', describe: 'wallet phrase', type: 'string', demandOption: false })
-        .option('to', { alias: 't', describe: 'wallet phrase', type: 'string', demandOption: false });
-      console.log('phrase', defaultPhrase);
-
-      // buildSwapMemo()
-      // multichain.swap(getInputAmount(123), getRecipient(), buildMemo(), assetFromString(inputAsset));
+      return yargs
+        .option('from', { alias: 'f', describe: 'source asset', type: 'string', demandOption: true })
+        .option('amount', { alias: 'a', describe: 'amount to swap', type: 'string', demandOption: true })
+        .option('to', { alias: 't', describe: 'destination asset', type: 'string', demandOption: true })
+        .help('help');
     },
     (argv) => {
-      console.log('do stuff');
-      const inputAsset = '';
-      const multichain = new Multichain({ network: defaultNetwork, phrase: defaultPhrase });
+      console.log(argv.amount);
+      console.log(argv.from);
+      console.log(argv.to);
     },
   )
 
-  .command('publish', 'shiver me timbers, should you be sharing all that', (yargs) =>
-    yargs
-      .option('f', {
-        alias: 'force',
-        description: 'yar, it usually be a bad idea',
-        demandOption: true,
-      })
-      .help('help'),
-  )
   .demandCommand(1, 'You need at least one command before moving on').argv;
+
+class Handlers {
+  static swap = (amount: string, inputAsset: string, outputAsset: string) => {
+    const multichain = new Multichain({ network: defaultNetwork, phrase: defaultPhrase });
+    const outputAssetObj = assetFromString(outputAsset);
+    const inputAssetObj = assetFromString(inputAsset);
+    const affiliatePoints = 100; // 1%
+    const address = multichain.getAddress(outputAssetObj.chain);
+    const memo = buildSwapMemo(outputAssetObj, multichain.getAddress(outputAssetObj.chain), affiliatePoints);
+    const inputAmount = getInputAmount(+amount);
+    multichain.swap(inputAmount, address, memo, inputAssetObj);
+  };
+}

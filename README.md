@@ -1,4 +1,4 @@
-# defispot Cli
+# Edge Cli
 
 ## Build project
 
