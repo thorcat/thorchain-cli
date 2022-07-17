@@ -61,9 +61,6 @@ yargs
     },
     (argv) => {
       console.info(title);
-      console.log(argv.amount);
-      console.log(argv.from);
-      console.log(argv.to);
       Handlers.swap(argv.amount, argv.from, argv.to);
     },
   )
@@ -78,6 +75,21 @@ yargs
       Handlers.balance(argv.asset);
     },
   )
+  .command(
+    'quote',
+    'quote for a swap from asset to asset. To see a list of assets use `list` ',
+    async (yargs) => {
+      return yargs
+        .option('from', { alias: 'f', describe: 'source asset', type: 'string', demandOption: true })
+        .option('amount', { alias: 'a', describe: 'amount to swap', type: 'string', demandOption: true })
+        .option('to', { alias: 't', describe: 'destination asset', type: 'string', demandOption: true })
+        .help('help');
+    },
+    (argv) => {
+      console.info(title);
+      Handlers.swap(argv.amount, argv.from, argv.to);
+    },
+  )
 
   .demandCommand(1, 'You need at least one command before moving on').argv;
 
@@ -88,8 +100,9 @@ class Handlers {
     const outputAssetObj = assetFromString(outputAsset);
     const inputAssetObj = assetFromString(inputAsset);
     const affiliatePoints = 100; // 1%
+    const affiliateLink = process.env.AFFILIATE;
     const address = multichain.getAddress(outputAssetObj.chain);
-    const memo = buildSwapMemo(outputAssetObj, multichain.getAddress(outputAssetObj.chain), affiliatePoints);
+    const memo = buildSwapMemo(outputAssetObj, multichain.getAddress(outputAssetObj.chain), affiliateLink, affiliatePoints);
     const inputAmount = getInputAmount(+amount);
     const tx = await multichain.swap(inputAmount, address, memo, inputAssetObj);
     console.log(tx);
