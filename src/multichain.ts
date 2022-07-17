@@ -5,10 +5,12 @@ import { Client as BtcClient } from '@xchainjs/xchain-bitcoin';
 import { Client as DogeClient } from '@xchainjs/xchain-doge';
 import { Client as LtcClient } from '@xchainjs/xchain-litecoin';
 import { Client as BchClient } from '@xchainjs/xchain-bitcoincash';
-import { DepositParams, Network, TxParams } from '@xchainjs/xchain-client';
+import { BaseXChainClient, DepositParams, Network, TxParams } from '@xchainjs/xchain-client';
 import { Asset, AssetETH, BaseAmount, Chain, ETHChain, THORChain } from '@xchainjs/xchain-util';
 
 export class Multichain {
+  network: Network;
+
   thor: ThorClient;
 
   eth: EthClient;
@@ -23,17 +25,20 @@ export class Multichain {
 
   bch: BchClient;
 
+  // TODO: clients: BaseXChainClient[]
   constructor({ network, phrase }: { network: Network; phrase: string }) {
-    getChainIds(getDefaultClientUrl()).then((chainIds) => {
-      console.log('chain ids', chainIds);
-      this.thor = new ThorClient({ network, phrase, chainIds });
-      this.eth = new EthClient({ network, phrase });
-      this.bnb = new BnbClient({ network, phrase });
-      this.btc = new BtcClient({ network, phrase });
-      this.doge = new DogeClient({ network, phrase });
-      this.ltc = new LtcClient({ network, phrase });
-      this.bch = new BchClient({ network, phrase });
-    });
+    this.network = network;
+  }
+
+  async setupClients({ phrase }: { phrase: string }) {
+    const chainIds = await getChainIds(getDefaultClientUrl());
+    this.thor = new ThorClient({ network: this.network, phrase, chainIds });
+    this.eth = new EthClient({ network: this.network, phrase });
+    this.bnb = new BnbClient({ network: this.network, phrase });
+    this.btc = new BtcClient({ network: this.network, phrase });
+    this.doge = new DogeClient({ network: this.network, phrase });
+    this.ltc = new LtcClient({ network: this.network, phrase });
+    this.bch = new BchClient({ network: this.network, phrase });
   }
 
   async swap(inputAmount: BaseAmount, recipientAddress: string, memo: string, asset: Asset, index?: number) {
@@ -57,7 +62,7 @@ export class Multichain {
       recipient: recipientAddress,
       memo,
     };
-    return this.getChainClient(asset.chain).transfer(params);
+    return await this.getChainClient(asset.chain).transfer(params);
   }
 
   getChainClient = (chain: Chain) => {
@@ -72,6 +77,16 @@ export class Multichain {
   };
 
   getAddress = (chain: Chain, index?: number) => {
+    if (index) {
+      return this.getChainClient(chain).getAddress(index);
+    }
     return this.getChainClient(chain).getAddress();
+  };
+
+  getBalance = (asset: Asset, index?: number) => {
+    if (index) {
+      return this.getChainClient(asset.chain).getBalance(this.getAddress(asset.chain, index));
+    }
+    return this.getChainClient(asset.chain).getBalance(this.getAddress(asset.chain));
   };
 }

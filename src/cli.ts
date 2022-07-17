@@ -6,21 +6,28 @@ import { AssetPool } from './types';
 import chalk from 'chalk';
 import 'dotenv/config';
 import { useMidgard } from './midgard';
-import { assetFromString, BaseAmount, baseAmount } from '@xchainjs/xchain-util';
-import { getRecipient, buildSwapMemo, getInputAmount, compareAsset } from './utils';
+import { assetFromString } from '@xchainjs/xchain-util';
+import { buildSwapMemo, getInputAmount } from './utils';
 import { table, TableUserConfig } from 'table';
 
 const greeting = chalk.rgb(0, 36, 100).bold(`EDGE Thorchain CLI`);
-
 const title = boxen(greeting, { padding: 1, margin: 1, borderColor: 'green' });
-
-const defaultNetwork = Network.Testnet;
+const defaultNetwork = process.env.NETWORK as Network;
 const defaultPhrase = process.env.SECRET_PHRASE;
-
+const midgardUrl = () => {
+  switch (defaultNetwork) {
+    case Network.Mainnet:
+      return process.env.MIDGARD_MAINNET;
+    case Network.Stagenet:
+      return process.env.MIDGARD_STAGENET;
+    default:
+      return process.env.MIDGARD_TESTNET;
+  }
+};
 yargs
   .command('list', 'list all assets', {}, async (argv) => {
     console.info(title);
-    const result = await useMidgard();
+    const result = await useMidgard(midgardUrl());
     const price = [['Asset', 'Price']];
     result.map((asset: AssetPool) => {
       if (asset.asset === 'BNB.BUSD-BD1') {
@@ -53,23 +60,55 @@ yargs
         .help('help');
     },
     (argv) => {
+      console.info(title);
       console.log(argv.amount);
       console.log(argv.from);
       console.log(argv.to);
+      Handlers.swap(argv.amount, argv.from, argv.to);
+    },
+  )
+  .command(
+    'balance',
+    'retrieves balances for your connected wallet `list` ',
+    async (yargs) => {
+      return yargs.option('asset', { alias: 'a', describe: 'source asset', type: 'string', demandOption: true }).help('help');
+    },
+    (argv) => {
+      console.info(title);
+      Handlers.balance(argv.asset);
     },
   )
 
   .demandCommand(1, 'You need at least one command before moving on').argv;
 
 class Handlers {
-  static swap = (amount: string, inputAsset: string, outputAsset: string) => {
+  static swap = async (amount: string, inputAsset: string, outputAsset: string) => {
     const multichain = new Multichain({ network: defaultNetwork, phrase: defaultPhrase });
+    await multichain.setupClients({ phrase: defaultPhrase });
     const outputAssetObj = assetFromString(outputAsset);
     const inputAssetObj = assetFromString(inputAsset);
     const affiliatePoints = 100; // 1%
     const address = multichain.getAddress(outputAssetObj.chain);
     const memo = buildSwapMemo(outputAssetObj, multichain.getAddress(outputAssetObj.chain), affiliatePoints);
     const inputAmount = getInputAmount(+amount);
-    multichain.swap(inputAmount, address, memo, inputAssetObj);
+    const tx = await multichain.swap(inputAmount, address, memo, inputAssetObj);
+    console.log(tx);
+  };
+
+  static balance = async (asset: string) => {
+    const multichain = new Multichain({ network: defaultNetwork, phrase: defaultPhrase });
+    await multichain.setupClients({ phrase: defaultPhrase });
+    const balance = await multichain.getBalance(assetFromString(asset));
+    const arr = [['asset', 'balance']];
+    balance.forEach((bal) =>
+      arr.push([
+        bal.asset.symbol,
+        bal.amount
+          .amount()
+          .dividedBy(10 ** bal.amount.decimal)
+          .toString(),
+      ]),
+    );
+    console.log(table(arr));
   };
 }

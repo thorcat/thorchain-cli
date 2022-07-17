@@ -6,7 +6,8 @@ export const getInputAmount = (amount: number): BaseAmount => {
 
 // Build a memo
 export const buildSwapMemo = (asset: Asset, address: string, points: number): string => {
-  return `=:${asset.chain}.${getShortenedSymbol(asset)}:${address}::keithslife:${points}`;
+  // affiliate address could be a thorname
+  return `=:${asset.chain}.${getShortenedSymbol(asset)}:${address}::tthor19dyxgn653ed6y737zkhv2425ezfsw7f4yl9u4k:${points}`;
 };
 
 export const getShortenedSymbol = (asset: Asset): string => {

@@ -1,9 +1,10 @@
+import { Network } from '@xchainjs/xchain-client';
 import axios from 'axios';
 import { AssetPool } from './types';
 
-export const useMidgard = async (): Promise<AssetPool[]> => {
+export const useMidgard = async (url: string): Promise<AssetPool[]> => {
   try {
-    const pools = await axios.get('https://thorfi.app/v2/pools');
+    const pools = await axios.get(url);
     return (
       pools.data
         // get available pools
