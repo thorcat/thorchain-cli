@@ -1,4 +1,5 @@
 import { Asset, BaseAmount, baseAmount } from '@xchainjs/xchain-util';
+import { AssetPool } from 'types';
 
 export const getInputAmount = (amount: number): BaseAmount => {
   return baseAmount(amount);
@@ -27,4 +28,22 @@ export const getRecipient = (): string => {
 
 export const compareAsset = (a: Asset, b: Asset): boolean => {
   return a.chain === b.chain && a.symbol === b.symbol;
+};
+
+export const findRate = (pools: AssetPool[], inputAsset: string, outputAsset: string) => {
+  let a = 1;
+  if (inputAsset === 'THOR.RUNE') {
+    a = 1;
+  } else {
+    const inputPool = pools.find((asset) => asset.asset === inputAsset);
+    a = inputPool.assetPrice;
+  }
+  let b = 1;
+  if (outputAsset === 'THOR.RUNE') {
+    b = 1;
+  } else {
+    const outputPool = pools.find((asset) => asset.asset === outputAsset);
+    a = outputPool.assetPrice;
+  }
+  return a / b;
 };
