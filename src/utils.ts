@@ -31,19 +31,15 @@ export const compareAsset = (a: Asset, b: Asset): boolean => {
 };
 
 export const findRate = (pools: AssetPool[], inputAsset: string, outputAsset: string) => {
-  let a = 1;
-  if (inputAsset === 'THOR.RUNE') {
-    a = 1;
-  } else {
+  let a,
+    b = 1;
+  if (inputAsset !== 'THOR.RUNE') {
     const inputPool = pools.find((asset) => asset.asset === inputAsset);
     a = inputPool.assetPrice;
   }
-  let b = 1;
-  if (outputAsset === 'THOR.RUNE') {
-    b = 1;
-  } else {
+  if (outputAsset !== 'THOR.RUNE') {
     const outputPool = pools.find((asset) => asset.asset === outputAsset);
-    a = outputPool.assetPrice;
+    b = outputPool.assetPrice;
   }
   return a / b;
 };
