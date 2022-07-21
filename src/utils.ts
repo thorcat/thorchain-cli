@@ -6,8 +6,9 @@ export const getInputAmount = (amount: number): BaseAmount => {
 };
 
 // Build a memo
+// JS code that creates the data/OP_RETURN payload for the sending transaction
 export const buildSwapMemo = (asset: Asset, address: string, affiliateAddress, points: number): string => {
-  // affiliate address could be a thorname
+  // affiliate address could be a thorname, and the minimum received is not set in this example.
   return `=:${asset.chain}.${getShortenedSymbol(asset)}:${address}::${affiliateAddress}:${points}`;
 };
 
