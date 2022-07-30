@@ -11,19 +11,19 @@ yarn install
 yarn run build
 ```
 
-## List Assets and Prices
+## List Assets and Prices (no build required)
 
 run the following command to list all assets and prices in USD.
 
 1.  ```bash
-       node dist/thorchain.js list
+        ts-node src/thorchain list
     ```
 
 ## Get balance of address
 
 1. run the following command to retrieve the balance of your connected wallet.
    ```bash
-       node dist/thorchain.js balance -a THOR.RUNE
+       ts-node src/thorchain balance -a THOR.RUNE
    ```
 
 ## Swap assets
@@ -33,5 +33,5 @@ run the following command to list all assets and prices in USD.
    `-t` is the destination asset
    `-a` is the amount the input asset you wish to convert.
    ```bash
-       node dist/thorchain.js swap -f THOR.RUNE -t BNB.BNB -a 100
+       ts-node src/thorchain swap -f THOR.RUNE -t BNB.BNB -a 100
    ```
