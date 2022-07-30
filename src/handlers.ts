@@ -32,7 +32,8 @@ export class Handlers {
     const memo = buildSwapMemo(outputAssetObj, multichain.getAddress(outputAssetObj.chain), affiliateLink, affiliatePoints);
     const inputAmount = getInputAmount(+amount);
     const tx = await multichain.swap(inputAmount.times(10 ** 8), address, memo, inputAssetObj);
-    console.log(tx);
+    console.log('success');
+    console.log(`https://viewblock.io/thorchain/tx/${tx}?network=${defaultNetwork}`);
   };
 
   static balance = async (asset: string) => {
