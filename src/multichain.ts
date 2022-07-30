@@ -76,17 +76,11 @@ export class Multichain {
     return null;
   };
 
-  getAddress = (chain: Chain, index?: number) => {
-    if (index) {
-      return this.getChainClient(chain).getAddress(index);
-    }
-    return this.getChainClient(chain).getAddress();
+  getAddress = (chain: Chain, index = 0) => {
+    return this.getChainClient(chain).getAddress(index);
   };
 
-  getBalance = (asset: Asset, index?: number) => {
-    if (index) {
-      return this.getChainClient(asset.chain).getBalance(this.getAddress(asset.chain, index));
-    }
-    return this.getChainClient(asset.chain).getBalance(this.getAddress(asset.chain));
+  getBalance = (asset: Asset, index = 0) => {
+    return this.getChainClient(asset.chain).getBalance(this.getAddress(asset.chain, index));
   };
 }

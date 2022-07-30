@@ -9,6 +9,7 @@ import { table, TableUserConfig } from 'table';
 const defaultNetwork = process.env.NETWORK as Network;
 const defaultPhrase = process.env.SECRET_PHRASE;
 const BUSD_SYMBOL = defaultNetwork === Network.Testnet ? 'BNB.BUSD-74E' : 'BNB.BUSD-BD1';
+
 const midgardUrl = () => {
   switch (defaultNetwork) {
     case Network.Mainnet:
@@ -30,7 +31,7 @@ export class Handlers {
     const address = multichain.getAddress(outputAssetObj.chain);
     const memo = buildSwapMemo(outputAssetObj, multichain.getAddress(outputAssetObj.chain), affiliateLink, affiliatePoints);
     const inputAmount = getInputAmount(+amount);
-    const tx = await multichain.swap(inputAmount, address, memo, inputAssetObj);
+    const tx = await multichain.swap(inputAmount.times(10 ** 8), address, memo, inputAssetObj);
     console.log(tx);
   };
 
@@ -50,6 +51,7 @@ export class Handlers {
     );
     console.log(table(arr));
   };
+
   static list = async () => {
     const result = await useMidgard(midgardUrl() + '/v2/pools');
     const price = [['Asset', 'Price']];
